@@ -1,0 +1,9 @@
+bdoalchemy.db
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.uv/
+uv.lock
+*.db-shm
+*.db-wal

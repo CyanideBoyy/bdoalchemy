@@ -1,0 +1,13 @@
+[server]
+runOnSave = true
+fileWatcherType = "poll"
+maxUploadSize = 200
+folderWatchList = ["./core", "./alchemy"]
+folderWatchBlacklist = [".venv", "__pycache__", ".git"]
+
+[runner]
+fastReruns = true
+magicEnabled = false
+
+[browser]
+gatherUsageStats = false

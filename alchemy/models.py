@@ -278,7 +278,7 @@ CLOWN_BLOOD = CraftableItem(
         blood("blood_t3", 2),  # Wolf / Rhino Blood
         Ingredient("clear_liquid_reagent", "Clear Liquid Reagent", 1),
         Ingredient("spirit_leaf", "Spirit Leaf", 1),
-        Ingredient("darkness_powder", "Darkness Powder", 1),
+        Ingredient("darkness_powder", "Powder of Darkness", 1),
     ],
 )
 
@@ -289,7 +289,7 @@ SINNERS_BLOOD = CraftableItem(
         blood("blood_t2", 2),  # Goat / Deer Blood
         Ingredient("clear_liquid_reagent", "Clear Liquid Reagent", 1),
         Ingredient("bloody_tree_knot", "Bloody Tree Knot", 1),
-        Ingredient("fire_powder", "Fire Powder", 1),
+        Ingredient("fire_powder", "Powder of Flame", 1),
     ],
 )
 
@@ -334,7 +334,7 @@ OIL_OF_CORRUPTION = CraftableItem(
         Ingredient("sinners_blood", "Sinner's Blood", 1),
         Ingredient("fruit_of_nature", "Fruit of Nature", 1),
         Ingredient("spirit_leaf", "Spirit Leaf", 1),
-        Ingredient("darkness_powder", "Darkness Powder", 1),
+        Ingredient("darkness_powder", "Powder of Darkness", 1),
     ],
 )
 
@@ -345,7 +345,7 @@ OIL_OF_REGENERATION = CraftableItem(
         Ingredient("divine_beast_blood", "Divine Beast Blood", 1),
         Ingredient("fruit_of_nature", "Fruit of Nature", 1),
         Ingredient("red_tree_lump", "Red Tree Lump", 1),
-        Ingredient("rifts_dust", "Rift's Dust", 1),
+        Ingredient("rifts_dust", "Powder of Rifts", 1),
     ],
 )
 
@@ -356,7 +356,7 @@ OIL_OF_STORMS = CraftableItem(
         Ingredient("tyrant_blood", "Tyrant Blood", 1),
         Ingredient("fruit_of_nature", "Fruit of Nature", 1),
         Ingredient("old_tree_bark", "Old Tree Bark", 1),
-        Ingredient("time_powder", "Time Powder", 1),
+        Ingredient("time_powder", "Powder of Time", 1),
     ],
 )
 
@@ -367,7 +367,7 @@ OIL_OF_FORTITUDE = CraftableItem(
         Ingredient("clown_blood", "Clown Blood", 1),
         Ingredient("fruit_of_nature", "Fruit of Nature", 1),
         Ingredient("monk_branch", "Monk's Branch", 1),
-        Ingredient("fire_powder", "Fire Powder", 1),
+        Ingredient("fire_powder", "Powder of Flame", 1),
     ],
 )
 
@@ -378,7 +378,7 @@ OIL_OF_TRANQUILITY = CraftableItem(
         Ingredient("wise_man_blood", "Wise Man's Blood", 1),
         Ingredient("fruit_of_nature", "Fruit of Nature", 1),
         Ingredient("bloody_tree_knot", "Bloody Tree Knot", 1),
-        Ingredient("earth_powder", "Earth Powder", 1),
+        Ingredient("earth_powder", "Powder of Earth", 1),
     ],
 )
 
@@ -502,7 +502,7 @@ DRAUGHTS: List[Draught] = [
                     Ingredient("clear_liquid_reagent", "Clear Liquid Reagent", 5),
                     Ingredient("nature_trace", "Trace of Nature", 3),
                     Ingredient("snowy_cedar_sap", "Snowy Cedar Sap", 7),
-                    Ingredient("fire_powder", "Fire Powder", 5),
+                    Ingredient("fire_powder", "Powder of Flame", 5),
                 ],
             ),
         ],
@@ -518,7 +518,7 @@ DRAUGHTS: List[Draught] = [
                 market_id=0,
                 ingredients=[
                     Ingredient("wise_man_blood", "Wise Man's Blood", 1),
-                    Ingredient("darkness_powder", "Darkness Powder", 2),
+                    Ingredient("darkness_powder", "Powder of Darkness", 2),
                     Ingredient("fortune_teller_mush", "Fortune Teller Mushroom", 5),
                     Ingredient("pine_sap", "Pine Sap", 5),
                 ],
@@ -529,7 +529,7 @@ DRAUGHTS: List[Draught] = [
                 market_id=0,
                 ingredients=[
                     Ingredient("clown_blood", "Clown Blood", 1),
-                    Ingredient("time_powder", "Time Powder", 3),
+                    Ingredient("time_powder", "Powder of Time", 3),
                     Ingredient("tiger_mushroom", "Tiger Mushroom", 5),
                     Ingredient("cedar_sap", "Cedar Sap", 7),
                 ],
@@ -540,7 +540,7 @@ DRAUGHTS: List[Draught] = [
                 market_id=0,
                 ingredients=[
                     Ingredient("tyrant_blood", "Tyrant Blood", 1),
-                    Ingredient("darkness_powder", "Darkness Powder", 2),
+                    Ingredient("darkness_powder", "Powder of Darkness", 2),
                     Ingredient("fire_flake_flower", "Fire Flake Flower", 5),
                     Ingredient("maple_sap", "Maple Sap", 3),
                 ],
@@ -551,7 +551,7 @@ DRAUGHTS: List[Draught] = [
                 market_id=0,
                 ingredients=[
                     Ingredient("divine_beast_blood", "Divine Beast Blood", 1),
-                    Ingredient("darkness_powder", "Darkness Powder", 2),
+                    Ingredient("darkness_powder", "Powder of Darkness", 2),
                     Ingredient("arrow_mushroom", "Arrow Mushroom", 5),
                     Ingredient("birch_sap", "Birch Sap", 5),
                 ],
@@ -646,7 +646,7 @@ DRAUGHTS: List[Draught] = [
                 market_id=0,
                 ingredients=[
                     Ingredient("thuja_sap", "Thuja Sap", 6),
-                    Ingredient("fire_powder", "Fire Powder", 2),
+                    Ingredient("fire_powder", "Powder of Flame", 2),
                     Ingredient("monk_branch", "Monk's Branch", 3),
                     Ingredient("purified_water", "Purified Water", 3),
                     Ingredient("clown_blood", "Clown Blood", 2),
@@ -737,7 +737,7 @@ STANDALONE_ELIXIRS: List[StandaloneElixir] = [
         ingredients=[
             Ingredient("sinners_blood", "Sinner's Blood", 1),
             Ingredient("arrow_mushroom", "Arrow Mushroom", 4),
-            Ingredient("darkness_powder", "Darkness Powder", 3),
+            Ingredient("darkness_powder", "Powder of Darkness", 3),
             Ingredient("fir_sap", "Fir Sap", 4),
         ],
     ),
@@ -771,7 +771,7 @@ STANDALONE_ELIXIRS: List[StandaloneElixir] = [
         ingredients=[
             Ingredient("clown_blood", "Clown Blood", 1),
             Ingredient("fortune_teller_mush", "Fortune Teller Mushroom", 4),
-            Ingredient("darkness_powder", "Darkness Powder", 3),
+            Ingredient("darkness_powder", "Powder of Darkness", 3),
             Ingredient("maple_sap", "Maple Sap", 4),
         ],
     ),
@@ -916,6 +916,7 @@ ELIXIRS_PER_DRAUGHT = 3
 def calculate_materials_needed(
     harmony_count: int,
     elixir_stock: Dict[str, int],
+    elixir_stock_blue: Dict[str, int] = None,
     material_stock: Dict[str, int] = None,
     draught_stock: Dict[str, int] = None,
 ) -> Tuple[Dict[str, Dict], Dict[str, int]]:
@@ -923,16 +924,21 @@ def calculate_materials_needed(
 
     Args:
         harmony_count: Target number of Harmonies to produce.
-        elixir_stock: Current stock per elixir {elixir_key: qty}.
+        elixir_stock: Current green stock per elixir {elixir_key: qty}.
+        elixir_stock_blue: Current blue stock per elixir {elixir_key: qty}.
+                          1 blue = 3 green equivalent.
         material_stock: Current stock per material {key: qty}.
         draught_stock: Current stock per draught {draught_key: qty}.
 
     Returns:
         Tuple of:
         - per_elixir: {elixir_key: {"crafts_needed", "elixir_missing",
-                                    "elixir_target", "materials"}}
+                                    "elixir_target", "materials",
+                                    "stock_green", "stock_blue"}}
         - totals: {ingredient_key: total_qty_needed_across_all_elixirs}
     """
+    if elixir_stock_blue is None:
+        elixir_stock_blue = {}
     if material_stock is None:
         material_stock = {}
     if draught_stock is None:
@@ -949,8 +955,10 @@ def calculate_materials_needed(
         effective_target = max(0, base_elixir_target - elixirs_covered)
 
         for elixir in draught.elixirs:
-            stock = elixir_stock.get(elixir.key, 0)
-            elixir_missing = max(0, effective_target - stock)
+            stock_g = elixir_stock.get(elixir.key, 0)
+            stock_b = elixir_stock_blue.get(elixir.key, 0)
+            total_equiv = stock_g + stock_b * 3
+            elixir_missing = max(0, effective_target - total_equiv)
             ing_needs: Dict[str, int] = {}
 
             for ing in elixir.ingredients:
@@ -963,6 +971,8 @@ def calculate_materials_needed(
                 "elixir_missing": elixir_missing,
                 "elixir_target": effective_target,
                 "materials": ing_needs,
+                "stock_green": stock_g,
+                "stock_blue": stock_b,
             }
 
     return per_elixir, totals
@@ -971,22 +981,28 @@ def calculate_materials_needed(
 def calculate_standalone_materials_needed(
     harmony_count: int,
     elixir_stock: Dict[str, int],
+    elixir_stock_blue: Dict[str, int] = None,
 ) -> Dict[str, Dict]:
     """Calculate per-standalone-elixir crafts needed and ingredient totals.
 
     Args:
         harmony_count: Target number of Harmonies (used to scale target).
-        elixir_stock: Current stock per elixir {elixir_key: qty}.
+        elixir_stock: Current green stock per elixir {elixir_key: qty}.
+        elixir_stock_blue: Current blue stock per elixir {elixir_key: qty}.
 
     Returns:
         {elixir_key: {"crafts_needed", "elixir_missing", "elixir_target",
-                      "materials", "name"}}
+                      "materials", "name", "stock_green", "stock_blue"}}
     """
+    if elixir_stock_blue is None:
+        elixir_stock_blue = {}
     result: Dict[str, Dict] = {}
     for elixir in STANDALONE_ELIXIRS:
         target = elixir.target_per_harmony * harmony_count
-        stock = elixir_stock.get(elixir.key, 0)
-        missing = max(0, target - stock)
+        stock_g = elixir_stock.get(elixir.key, 0)
+        stock_b = elixir_stock_blue.get(elixir.key, 0)
+        total_equiv = stock_g + stock_b * 3
+        missing = max(0, target - total_equiv)
         ing_needs: Dict[str, int] = {
             ing.key: ing.quantity * missing for ing in elixir.ingredients
         }
@@ -996,5 +1012,7 @@ def calculate_standalone_materials_needed(
             "elixir_target": target,
             "materials": ing_needs,
             "name": elixir.name,
+            "stock_green": stock_g,
+            "stock_blue": stock_b,
         }
     return result

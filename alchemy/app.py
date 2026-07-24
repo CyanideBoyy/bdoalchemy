@@ -40,9 +40,11 @@ def _init_db() -> None:
         st.session_state.alchemy_db_initialized = True
 
 
-def _load_stock() -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
+def _load_stock() -> tuple[dict[str, int], dict[str, int], dict[str, int], dict[str, int]]:
+    green, blue = _alchemy_repo.get_elixir_stock()
     return (
-        _alchemy_repo.get_elixir_stock(),
+        green,
+        blue,
         _alchemy_repo.get_material_stock(),
         _alchemy_repo.get_draught_stock(),
     )
@@ -112,7 +114,7 @@ def _material_group(key: str) -> str:
         return "Mushroom"
     if key.endswith("_sap"):
         return "Sap"
-    if key.endswith("_powder"):
+    if key.endswith("_powder") or key == "rifts_dust":
         return "Powder"
     return "Others"
 
@@ -168,9 +170,10 @@ def _render_harmony_header() -> int:
         )
     return int(new_count)
 
-
 def _render_elixir_stock_editor(
-    elixir_stock: dict[str, int], harmony_count: int
+    elixir_stock_green: dict[str, int],
+    elixir_stock_blue: dict[str, int],
+    harmony_count: int,
 ) -> None:
     from alchemy.models import ELIXIRS_PER_DRAUGHT
 
@@ -178,48 +181,107 @@ def _render_elixir_stock_editor(
     st.subheader("Elixir Stock")
     st.caption(
         f"Set how many of each elixir you currently have.  \n"
-        f"Target per elixir: **{elixir_target}** "
-        f"({harmony_count} × {ELIXIRS_PER_DRAUGHT})."
+        f"Target: **{elixir_target} green** per elixir "
+        f"({harmony_count} × {ELIXIRS_PER_DRAUGHT}). "
+        "1 blue = 3 green."
     )
     for draught in DRAUGHTS:
-        with st.expander(draught.name, expanded=True):
+        with st.expander(draught.name, expanded=False):
             for elixir in draught.elixirs:
-                qty = elixir_stock.get(elixir.key, 0)
-                missing = max(0, elixir_target - qty)
+                g = elixir_stock_green.get(elixir.key, 0)
+                b = elixir_stock_blue.get(elixir.key, 0)
+                total_equiv = g + b * 3
+                missing = max(0, elixir_target - total_equiv)
+                done = missing == 0
                 label = (
                     f"{elixir.name} — **{missing} missing**"
-                    if missing > 0
+                    if not done
                     else f"{elixir.name} — Done"
                 )
-                new_val = _stock_row(
-                    label, qty, f"elixir_set_{elixir.key}", max_val=9999
+                col_name, col_g, col_b = st.columns([2, 1, 1])
+                col_name.markdown(
+                    f"<span style='font-size:0.9em'>{label}</span>",
+                    unsafe_allow_html=True,
                 )
-                if new_val is not None:
-                    _alchemy_repo.set_elixir_quantity(elixir.key, new_val)
+                new_g = col_g.number_input(
+                    "Green",
+                    min_value=0,
+                    max_value=9999,
+                    value=g,
+                    step=1,
+                    key=f"elixir_set_{elixir.key}_g",
+                    label_visibility="collapsed",
+                )
+                new_b = col_b.number_input(
+                    "Blue",
+                    min_value=0,
+                    max_value=9999,
+                    value=b,
+                    step=1,
+                    key=f"elixir_set_{elixir.key}_b",
+                    label_visibility="collapsed",
+                )
+                if int(new_g) != g:
+                    _alchemy_repo.set_elixir_quantity(elixir.key, int(new_g))
+                    st.rerun()
+                if int(new_b) != b:
+                    _alchemy_repo.set_elixir_blue_quantity(elixir.key, int(new_b))
                     st.rerun()
 
 
 def _render_standalone_elixir_stock_editor(
-    elixir_stock: dict[str, int], harmony_count: int
+    elixir_stock_green: dict[str, int],
+    elixir_stock_blue: dict[str, int],
+    harmony_count: int,
 ) -> None:
     """Stock editor for standalone elixirs (not part of any Draught)."""
+    from alchemy.models import ELIXIRS_PER_DRAUGHT
+
+    target = harmony_count * ELIXIRS_PER_DRAUGHT
     st.subheader("Other Elixirs")
     st.caption(
-        "These elixirs are tracked separately from the Harmony structure.  \n"
-        f"Target per elixir: **{harmony_count * 3}** ({harmony_count} × 3)."
+        f"Target: **{target} green** per elixir. "
+        "1 blue = 3 green."
     )
     for elixir in STANDALONE_ELIXIRS:
-        target = elixir.target_per_harmony * harmony_count
-        qty = elixir_stock.get(elixir.key, 0)
-        missing = max(0, target - qty)
+        g = elixir_stock_green.get(elixir.key, 0)
+        b = elixir_stock_blue.get(elixir.key, 0)
+        total_equiv = g + b * 3
+        missing = max(0, target - total_equiv)
+        done = missing == 0
         label = (
             f"{elixir.name} — **{missing} missing**"
-            if missing > 0
+            if not done
             else f"{elixir.name} — Done"
         )
-        new_val = _stock_row(label, qty, f"elixir_set_{elixir.key}", max_val=9999)
-        if new_val is not None:
-            _alchemy_repo.set_elixir_quantity(elixir.key, new_val)
+        col_name, col_g, col_b = st.columns([2, 1, 1])
+        col_name.markdown(
+            f"<span style='font-size:0.9em'>{label}</span>",
+            unsafe_allow_html=True,
+        )
+        new_g = col_g.number_input(
+            "G",
+            min_value=0,
+            max_value=9999,
+            value=g,
+            step=1,
+            key=f"aelixir_set_{elixir.key}_g",
+            label_visibility="collapsed",
+        )
+        new_b = col_b.number_input(
+            "B",
+            min_value=0,
+            max_value=9999,
+            value=b,
+            step=1,
+            key=f"aelixir_set_{elixir.key}_b",
+            label_visibility="collapsed",
+        )
+        if int(new_g) != g:
+            _alchemy_repo.set_elixir_quantity(elixir.key, int(new_g))
+            st.rerun()
+        if int(new_b) != b:
+            _alchemy_repo.set_elixir_blue_quantity(elixir.key, int(new_b))
             st.rerun()
 
 
@@ -228,73 +290,59 @@ def _render_material_stock_editor(material_stock: dict[str, int]) -> None:
     st.subheader("Material Stock")
     st.caption("Set how much of each ingredient you have on hand.")
 
-    # --- 1. Raw (non-swap, non-craftable) ingredients ---
-    st.markdown("**Raw Materials**")
+    # --- 1-3. All raw + craftable + sub-material ingredients grouped by category ---
     all_ings = _all_non_swap_ingredients()
-    grouped: dict[str, list[Ingredient]] = {
-        "Mushroom": [],
-        "Sap": [],
-        "Powder": [],
-        "Others": [],
-    }
-    for ing in all_ings:
-        grouped[_material_group(ing.key)].append(ing)
-    for group_name in ("Mushroom", "Sap", "Powder", "Others"):
-        with st.expander(group_name, expanded=True):
-            members = grouped[group_name]
-            if not members:
-                continue
-            st.markdown(f"*{group_name}*")
-            for ing in members:
-                qty = material_stock.get(ing.key, 0)
-                new_val = _stock_row(ing.name, qty, f"mat_set_{ing.key}")
-                if new_val is not None:
-                    _alchemy_repo.set_material_quantity(ing.key, new_val)
-                    st.rerun()
+    all_ing_keys: set[str] = {ing.key for ing in all_ings}
 
-    # --- 2. Craftable intermediates ---
-    # TODO merge intermediate sub materials with raw materials above.
-    st.markdown("**Craftable Intermediates**")
-    st.caption("Stock already crafted. Used to reduce sub-material requirements.")
-    for craftable in CRAFTABLES.values():
-
-        qty = material_stock.get(craftable.key, 0)
-        new_val = _stock_row(craftable.name, qty, f"mat_set_{craftable.key}")
-        if new_val is not None:
-            _alchemy_repo.set_material_quantity(craftable.key, new_val)
-            st.rerun()
-
-    # --- 3. Sub-ingredients of craftables (salt, sugar, spirit leaf, etc.) ---
-    st.markdown("**Intermediate Sub-Materials**")
-    st.caption("Raw ingredients used to craft intermediates (reagents, bloods, oils).")
+    # Collect sub-ingredients of craftables that aren't already in all_ings
     sub_seen: set[str] = set()
-    sub_ings: list[Ingredient] = []
     for craftable in CRAFTABLES.values():
         for ing in craftable.ingredients:
             if (
                 not ing.is_swap_group
                 and ing.key not in CRAFTABLES
                 and ing.key not in sub_seen
+                and ing.key not in all_ing_keys
             ):
-                already_shown = any(
-                    existing_ing.key == ing.key for existing_ing in all_ings
-                )
-                if not already_shown:
-                    sub_seen.add(ing.key)
-                    sub_ings.append(ing)
-    sub_ings.sort(key=lambda i: (_material_group(i.key), i.name))
-    for ing in sub_ings:
-        qty = material_stock.get(ing.key, 0)
-        new_val = _stock_row(ing.name, qty, f"mat_set_{ing.key}")
-        if new_val is not None:
-            _alchemy_repo.set_material_quantity(ing.key, new_val)
-            st.rerun()
+                sub_seen.add(ing.key)
+                all_ings.append(ing)
+                all_ing_keys.add(ing.key)
 
-    # --- 4. Blood tiers (single input per tier) ---
-    st.markdown("**Blood (by Tier)**")
-    st.caption(
-        "Track total blood per tier. Any animal of the same tier is interchangeable."
-    )
+    # Blood craftable keys — excluded from Craftables group, handled in Blood section.
+    _blood_craftable_keys = {
+        "clown_blood",
+        "sinners_blood",
+        "tyrant_blood",
+        "divine_beast_blood",
+        "wise_man_blood",
+    }
+
+    grouped: dict[str, list] = {
+        "Mushroom": [],
+        "Sap": [],
+        "Powder": [],
+        "Craftables": [],
+        "Others": [],
+    }
+    for ing in all_ings:
+        grouped[_material_group(ing.key)].append(ing)
+    for craftable in CRAFTABLES.values():
+        if craftable.key not in _blood_craftable_keys:
+            grouped["Craftables"].append(craftable)
+
+    for group_name in ("Mushroom", "Sap", "Powder", "Craftables", "Others"):
+        members = grouped[group_name]
+        if not members:
+            continue
+        with st.expander(f"{group_name} ({len(members)})", expanded=False):
+            for item in members:
+                qty = material_stock.get(item.key, 0)
+                new_val = _stock_row(item.name, qty, f"mat_set_{item.key}")
+                if new_val is not None:
+                    _alchemy_repo.set_material_quantity(item.key, new_val)
+                    st.rerun()
+
+    # --- 4. Blood (all groups in one expander) ---
     used_blood_keys: set[str] = set()
     for draught in DRAUGHTS:
         for elixir in draught.elixirs:
@@ -310,38 +358,50 @@ def _render_material_stock_editor(material_stock: dict[str, int]) -> None:
             if ing.is_blood_type:
                 used_blood_keys.add(ing.blood_type_key)
 
-    for bt in BLOOD_TYPES:
-        if bt.key not in used_blood_keys:
-            continue
-        qty = material_stock.get(bt.key, 0)
-        label = bt.display_name
-        col_name, col_set = st.columns([3, 2])
-        col_name.write(label)
-        col_name.caption(bt.tooltip, help=None)
-        new_val = col_set.number_input(
-            "qty",
-            min_value=0,
-            max_value=99999,
-            value=qty,
-            step=1,
-            key=f"mat_set_{bt.key}",
-            label_visibility="collapsed",
-        )
-        if int(new_val) != qty:
-            _alchemy_repo.set_material_quantity(bt.key, int(new_val))
-            st.rerun()
+    blood_craftables = [CRAFTABLES[k] for k in _blood_craftable_keys if k in CRAFTABLES]
+    blood_raw = [bt for bt in BLOOD_TYPES if bt.key in used_blood_keys]
+    total_blood = len(blood_craftables) + len(blood_raw)
 
-    # --- 5. Wild Grass / Weeds ---
-    st.markdown("**Weeds**")
-    wg_qty = material_stock.get(WEEDS_GROUP.key, 0)
-    new_val = _stock_row(
-        f"{WEEDS_GROUP.display_name} (total)",
-        wg_qty,
-        f"mat_set_{WEEDS_GROUP.key}",
-    )
-    if new_val is not None:
-        _alchemy_repo.set_material_quantity(WEEDS_GROUP.key, new_val)
-        st.rerun()
+    with st.expander(f"Blood ({total_blood})", expanded=False):
+        if blood_craftables:
+            st.caption("Craftable")
+            for item in blood_craftables:
+                qty = material_stock.get(item.key, 0)
+                new_val = _stock_row(item.name, qty, f"mat_set_{item.key}")
+                if new_val is not None:
+                    _alchemy_repo.set_material_quantity(item.key, new_val)
+                    st.rerun()
+        for bt in blood_raw:
+            tier_num = bt.key.replace("blood_t", "")
+            st.caption(f"Group {tier_num}")
+            qty = material_stock.get(bt.key, 0)
+            col_name, col_set = st.columns([1, 1])
+            col_name.write(bt.display_name)
+            col_name.caption(bt.tooltip, help=None)
+            new_val = col_set.number_input(
+                "qty",
+                min_value=0,
+                max_value=99999,
+                value=qty,
+                step=1,
+                key=f"mat_set_{bt.key}",
+                label_visibility="collapsed",
+            )
+            if int(new_val) != qty:
+                _alchemy_repo.set_material_quantity(bt.key, int(new_val))
+                st.rerun()
+
+    # --- 5. Weeds ---
+    with st.expander(f"Weeds (1)", expanded=False):
+        wg_qty = material_stock.get(WEEDS_GROUP.key, 0)
+        new_val = _stock_row(
+            WEEDS_GROUP.display_name,
+            wg_qty,
+            f"mat_set_{WEEDS_GROUP.key}",
+        )
+        if new_val is not None:
+            _alchemy_repo.set_material_quantity(WEEDS_GROUP.key, new_val)
+            st.rerun()
 
 
 def _render_draught_stock_editor(draught_stock: dict[str, int]) -> None:
@@ -361,23 +421,26 @@ def _render_draught_stock_editor(draught_stock: dict[str, int]) -> None:
 def _render_recipe_cards(
     harmony_count: int,
     elixir_stock: dict[str, int],
+    elixir_stock_blue: dict[str, int],
     material_stock: dict[str, int],
     draught_stock: dict[str, int],
 ) -> None:
     st.divider()
 
     per_elixir, totals = calculate_materials_needed(
-        harmony_count, elixir_stock, material_stock, draught_stock
+        harmony_count, elixir_stock, elixir_stock_blue, material_stock, draught_stock
     )
 
     # --- Intermediate recipe cards (priority: show before elixir cards) ---
     _per_elixir_raw, all_totals = calculate_materials_needed(
-        harmony_count, elixir_stock, material_stock, draught_stock
+        harmony_count, elixir_stock, elixir_stock_blue, material_stock, draught_stock
     )
     _raw, crafted_totals = explode_to_raw(all_totals, material_stock)
 
     # Also gather standalone totals for intermediate calculation
-    standalone_info = calculate_standalone_materials_needed(harmony_count, elixir_stock)
+    standalone_info = calculate_standalone_materials_needed(
+        harmony_count, elixir_stock, elixir_stock_blue
+    )
     standalone_totals: dict[str, int] = {}
     for info in standalone_info.values():
         for k, v in info["materials"].items():
@@ -414,8 +477,9 @@ def _render_recipe_cards(
                             help_text = None
                         short = max(0, need - have_ing)
                         icon = "🔴" if short > 0 else "🟢"
+                        qty = ing.quantity
                         st.markdown(
-                            f"{icon} {label}  \nNeed {need} / Have {have_ing}"
+                            f"{icon} {label} x{qty}  \nNeed {need} / Have {have_ing}"
                             + (f" / **Short {short}**" if short > 0 else ""),
                             help=help_text,
                         )
@@ -442,13 +506,14 @@ def _render_recipe_cards(
             elixir_missing = info["elixir_missing"]
             elixir_target = info["elixir_target"]
             mat_needs = info["materials"]
-            stock = elixir_stock.get(elixir.key, 0)
+            stock_g = info.get("stock_green", elixir_stock.get(elixir.key, 0))
+            stock_b = info.get("stock_blue", elixir_stock_blue.get(elixir.key, 0))
 
             with col:
                 with st.container(border=True):
                     st.markdown(f"**{elixir.name}**")
                     st.markdown(f"**{elixir_missing} missing**")
-                    st.caption(f"Stock: {stock} / {elixir_target}")
+                    st.caption(f"Stock: {stock_g}g + {stock_b}b / {elixir_target}g")
 
                     st.divider()
 
@@ -469,8 +534,9 @@ def _render_recipe_cards(
 
                         short = max(0, need - have)
                         icon = "🔴" if short > 0 else "🟢"
+                        qty = ing.quantity
                         st.markdown(
-                            f"{icon} {label}  \nNeed {need} / Have {have}"
+                            f"{icon} {label} x{qty}  \nNeed {need} / Have {have}"
                             + (f" / **Short {short}**" if short > 0 else ""),
                             help=help_text,
                         )
@@ -489,13 +555,14 @@ def _render_recipe_cards(
             missing = info["elixir_missing"]
             target = info["elixir_target"]
             mat_needs = info["materials"]
-            stock = elixir_stock.get(elixir.key, 0)
+            stock_g = info.get("stock_green", elixir_stock.get(elixir.key, 0))
+            stock_b = info.get("stock_blue", elixir_stock_blue.get(elixir.key, 0))
 
             with col:
                 with st.container(border=True):
                     st.markdown(f"**{elixir.name}**")
                     st.markdown(f"**{missing} missing**")
-                    st.caption(f"Stock: {stock} / {target}")
+                    st.caption(f"Stock: {stock_g}g + {stock_b}b / {target}g")
                     st.divider()
 
                     for ing in elixir.ingredients:
@@ -513,8 +580,9 @@ def _render_recipe_cards(
                             help_text = None
                         short = max(0, need - have)
                         icon = "🔴" if short > 0 else "🟢"
+                        qty = ing.quantity
                         st.markdown(
-                            f"{icon} {label}  \nNeed {need} / Have {have}"
+                            f"{icon} {label} x{qty}  \nNeed {need} / Have {have}"
                             + (f" / **Short {short}**" if short > 0 else ""),
                             help=help_text,
                         )
@@ -523,16 +591,19 @@ def _render_recipe_cards(
 def _render_totals(
     harmony_count: int,
     elixir_stock: dict[str, int],
+    elixir_stock_blue: dict[str, int],
     material_stock: dict[str, int],
     draught_stock: dict[str, int],
 ) -> None:
     """Two tables: direct ingredient needs, then fully-exploded raw material needs."""
     _per_elixir, totals = calculate_materials_needed(
-        harmony_count, elixir_stock, material_stock, draught_stock
+        harmony_count, elixir_stock, elixir_stock_blue, material_stock, draught_stock
     )
 
     # Merge standalone elixir totals
-    standalone_info = calculate_standalone_materials_needed(harmony_count, elixir_stock)
+    standalone_info = calculate_standalone_materials_needed(
+        harmony_count, elixir_stock, elixir_stock_blue
+    )
     for info in standalone_info.values():
         for k, v in info["materials"].items():
             totals[k] = totals.get(k, 0) + v
@@ -618,7 +689,12 @@ def run_alchemy() -> None:
     if "harmony_target" not in st.session_state:
         st.session_state.harmony_target = 10
 
-    elixir_stock, material_stock, draught_stock = _load_stock()
+    (
+        elixir_stock_green,
+        elixir_stock_blue,
+        material_stock,
+        draught_stock,
+    ) = _load_stock()
 
     harmony_count = _render_harmony_header()
     if harmony_count != st.session_state.harmony_target:
@@ -632,15 +708,15 @@ def run_alchemy() -> None:
             ["Elixir Stock", "Other Elixirs", "Draught Stock", "Material Stock"]
         )
         with tab_elixirs:
-            _render_elixir_stock_editor(elixir_stock, harmony_count)
+            _render_elixir_stock_editor(elixir_stock_green, elixir_stock_blue, harmony_count)
         with tab_standalone:
-            _render_standalone_elixir_stock_editor(elixir_stock, harmony_count)
+            _render_standalone_elixir_stock_editor(elixir_stock_green, elixir_stock_blue, harmony_count)
         with tab_draughts:
             _render_draught_stock_editor(draught_stock)
         with tab_materials:
             _render_material_stock_editor(material_stock)
 
     with right:
-        _render_totals(harmony_count, elixir_stock, material_stock, draught_stock)
+        _render_totals(harmony_count, elixir_stock_green, elixir_stock_blue, material_stock, draught_stock)
 
-    _render_recipe_cards(harmony_count, elixir_stock, material_stock, draught_stock)
+    _render_recipe_cards(harmony_count, elixir_stock_green, elixir_stock_blue, material_stock, draught_stock)

@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.uv/
+*.db
+*.db-shm
+*.db-wal
+.streamlit/
+fullpage.png
+inputs.json
+layout.json
+nul
+viewport.png

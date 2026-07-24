@@ -1,6 +1,6 @@
 """Alchemy repository for elixir and material stock persistence."""
 
-from typing import Dict
+from typing import Dict, Tuple
 from core.database.repositories.base_repository import BaseRepository
 from core.database.connection import get_connection
 
@@ -10,6 +10,7 @@ class AlchemyRepository(BaseRepository):
 
     Manages persistent stock counts for elixirs and base materials.
     Each item is identified by a stable string key (snake_case name).
+    Elixirs have two tiers: green (quantity) and blue (blue_qty).
     """
 
     def __init__(self) -> None:
@@ -20,44 +21,47 @@ class AlchemyRepository(BaseRepository):
     # Elixir stock
     # ------------------------------------------------------------------
 
-    def get_elixir_stock(self) -> Dict[str, int]:
-        """Return all elixir stock as {elixir_key: quantity}."""
+    def get_elixir_stock(self) -> Tuple[Dict[str, int], Dict[str, int]]:
+        """Return all elixir stock as (green_qty, blue_qty) dicts."""
         with get_connection(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT elixir_key, quantity FROM alchemy_elixir_stock")
-            return {row["elixir_key"]: row["quantity"] for row in cursor.fetchall()}
+            cursor.execute(
+                "SELECT elixir_key, quantity, blue_qty FROM alchemy_elixir_stock"
+            )
+            green: Dict[str, int] = {}
+            blue: Dict[str, int] = {}
+            for row in cursor.fetchall():
+                green[row["elixir_key"]] = row["quantity"]
+                blue[row["elixir_key"]] = row["blue_qty"]
+            return green, blue
 
     def set_elixir_quantity(self, elixir_key: str, quantity: int) -> None:
-        """Upsert an elixir stock quantity."""
+        """Upsert an elixir green stock quantity."""
         if quantity < 0:
             quantity = 0
         with get_connection(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO alchemy_elixir_stock (elixir_key, quantity)
-                VALUES (?, ?)
+                INSERT INTO alchemy_elixir_stock (elixir_key, quantity, blue_qty)
+                VALUES (?, ?, 0)
                 ON CONFLICT(elixir_key) DO UPDATE SET quantity = excluded.quantity
                 """,
                 (elixir_key, quantity),
             )
 
-    def adjust_elixir_quantity(self, elixir_key: str, delta: int) -> int:
-        """Add delta to an existing elixir stock, clamping to >= 0."""
+    def set_elixir_blue_quantity(self, elixir_key: str, quantity: int) -> None:
+        """Upsert an elixir blue stock quantity."""
+        if quantity < 0:
+            quantity = 0
         with get_connection(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO alchemy_elixir_stock (elixir_key, quantity)
-                VALUES (?, MAX(0, ?))
-                ON CONFLICT(elixir_key) DO UPDATE
-                SET quantity = MAX(0, quantity + excluded.quantity)
+                INSERT INTO alchemy_elixir_stock (elixir_key, quantity, blue_qty)
+                VALUES (?, 0, ?)
+                ON CONFLICT(elixir_key) DO UPDATE SET blue_qty = excluded.blue_qty
                 """,
-                (elixir_key, delta),
+                (elixir_key, quantity),
             )
-            row = conn.execute(
-                "SELECT quantity FROM alchemy_elixir_stock WHERE elixir_key = ?",
-                (elixir_key,),
-            ).fetchone()
-            return row["quantity"] if row else 0
 
     # ------------------------------------------------------------------
     # Material stock

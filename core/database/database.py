@@ -25,9 +25,17 @@ def init_alchemy_db():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS alchemy_elixir_stock (
                 elixir_key TEXT PRIMARY KEY,
-                quantity   INTEGER NOT NULL DEFAULT 0
+                quantity   INTEGER NOT NULL DEFAULT 0,
+                blue_qty   INTEGER NOT NULL DEFAULT 0
             )
         """)
+        try:
+            cursor.execute("""
+                ALTER TABLE alchemy_elixir_stock
+                ADD COLUMN blue_qty INTEGER NOT NULL DEFAULT 0
+            """)
+        except Exception:
+            pass
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS alchemy_material_stock (
                 material_key TEXT PRIMARY KEY,

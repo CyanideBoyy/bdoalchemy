@@ -11,6 +11,9 @@ dependencies = [
 [tool.uv]
 package = false
 
+[tool.poetry]
+package-mode = false
+
 [tool.ruff]
 exclude = [
     ".git",

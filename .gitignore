@@ -7,3 +7,10 @@ __pycache__/
 uv.lock
 *.db-shm
 *.db-wal
+
+# Local debug artifacts
+fullpage.png
+viewport.png
+inputs.json
+layout.json
+nul
